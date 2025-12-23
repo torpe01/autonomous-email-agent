@@ -1,0 +1,471 @@
+{
+  "name": "final",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        144
+      ],
+      "id": "d364af16-4a0b-42ea-b639-bab53ad3f109",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Rf5VIZpC3TkaZJ5M",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        128,
+        368
+      ],
+      "id": "10a24dd7-424d-4c9b-b516-c0f3d0f93d62",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OZpJbbVbfaLGChkW",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      },
+      "notes": "you need to give event time in sprate fild like \"requested_time_start\": whiich is mention in the mail\n\"requested_time_end\" : if it mention in the mail other wise  1 hour after the start time."
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.threadId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        368
+      ],
+      "id": "241e714c-74da-49a8-bb06-8293b1683ad4",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To_Email', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        944,
+        368
+      ],
+      "id": "84eadbe2-85ce-4ef2-96fb-6687169b7ad3",
+      "name": "Create a draft in Gmail",
+      "webhookId": "56e7ed63-f0f9-4755-be86-f135f61175ef",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Rf5VIZpC3TkaZJ5M",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "USER_EMAIL_PLACEHOLDER",
+          "mode": "id"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "useDefaultReminders": false,
+        "additionalFields": {
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        448,
+        368
+      ],
+      "id": "2f6375f1-c315-4dca-b293-47f6f637e170",
+      "name": "Create an event in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Gih424AsSiNqsd3c",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"summary\": {\n      \"type\": \"string\",\n      \"description\": \"A concise summary of the email.\"\n    },\n    \"priority\": {\n      \"type\": \"number\",\n      \"description\": \"The priority score from 1 (low) to 10 (high).\"\n    },\n    \"original_subject\": {\n      \"type\": \"string\",\n      \"description\": \"The original subject line.\"\n    },\n    \"sender\": {\n      \"type\": \"string\",\n      \"description\": \"The sender's name and email.\"\n    },\n    \"draft_generated\": {\n      \"type\": \"string\",\n      \"enum\": [\"Yes\", \"No\"],\n      \"description\": \"Output 'Yes' if you created a draft reply. Output 'No' if you did not.\"\n    },\n    \"is_scheduling_request\": {\n      \"type\": \"boolean\",\n      \"description\": \"True if the email is asking for a meeting time.\"\n    },\n    \"requested_time_start\": {\n      \"type\": \"string\",\n      \"description\": \"The requested start time in ISO 8601 format. If none, leave null.\"\n    },\n    \"requested_time_end\": {\n      \"type\": \"string\",\n      \"description\": \"The requested end time in ISO 8601 format. Default to 1 hour after start if not specified.\"\n    }\n  },\n  \"required\": [\n    \"summary\",\n    \"priority\",\n    \"original_subject\",\n    \"sender\",\n    \"draft_generated\",\n    \"is_scheduling_request\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        32
+      ],
+      "id": "281492b5-6070-47b1-8877-4a70a091c315",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=CURRENT DATE AND TIME: {{ $now.format('cccc, MMMM d, yyyy') }}\n`New email received. Please analyze and act.\nFrom: {{$json.From}}\nSubject: {{$json.Subject}}\nBody: {{$json.snippet}}`",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an intelligent, efficient, and warm Personal Assistant. Your goal is to manage the user's schedule and correspondence autonomously.\nWhen drafting emails, you MUST sound like a helpful human being: use natural, polite, and professional language.\n\n**PRIORITY SCORING RULES (CRITICAL):**\nYou must assign a priority score (1-10) based on these user preferences:\n* **HIGH Priority (8-10):**\n    * Keywords: \"Urgent\", \"Deadline\", \"ASAP\", \"Emergency\", \"Payment Due\".\n    * Topics: Job Offers, Server/System Errors.\n* **MEDIUM Priority (5-7):**\n    * Scheduling requests, meeting invites, questions from colleagues, general project updates.\n* **LOW Priority (1-4):**\n    * Newsletters, marketing emails, cold sales outreach, \"FYI\" notifications, spam.\n\nYour tasks are:\n\n1. **ANALYZE:**\n    * You MUST extract and provide the following details from the email for the JSON output:\n    * **Summary:** A concise summary.\n    * **Priority:** A score from 1 (low) to 10 (high) based on the rules above.\n    * **Original Subject:** The subject line.\n    * **Sender:** The sender's name/address.\n    * **Draft Generated:** Output \"Yes\" if you decided to create a draft reply (based on Rules 2, 3, or 4). Output \"No\" if you only analyzed/logged the email (e.g. low priority or no question asked).\n\n2. **AUTONOMOUS CALENDAR & EVENT MANAGEMENT:**\n    * **Goal:** Ensure all events, invitations, and agreed-upon times are added to the calendar immediately.\n\n    * **Part A (Fixed Events & Invitations):** If the email is informing you of a set event time OR is a direct invitation (e.g., \"Meeting is at 2 PM\"):\n        1. Use `Google Calendar` to **create** the event. Title: Original Subject.\n        2. Use `Gmail` to **create a draft reply**. Keep it warm. Example: \"Thanks for the invite! I've marked it on my calendar.\"\n\n    * **Part B (Scheduling Requests):** If the email is **asking** for availability (e.g., \"Are you free Friday at 3?\"):\n        1. First, use `Google Calendar` to **search** your calendar for that specific time.\n        2. **IF FREE:**\n            * Use `Google Calendar` to **create** the event.\n            * Use `Gmail` to **create a draft reply**. Example: \"That time works perfectly. I've added it to my calendar.\"\n        3. **IF BUSY:**\n            * Use `Gmail` to **create a draft reply** apologizing and asking for another time.\n\n    * **Part C (Bills & Due Dates):** If the email is a bill with a due date:\n        * Use `Google Calendar` to **create** an event on that date (Start: 09:00 AM). Title: \"BILL DUE: [Sender] - [Amount]\".\n\n3. **DRAFTING (Context-Aware Reply):**\n    * **Trigger:** The email is a **direct question** about work/projects (NOT scheduling).\n    * **Action:**\n        1. Use `Gmail` to **search previous emails** from this sender to understand context.\n        2. Use `Gmail` to **create a draft reply** answering their question in your typical style.\n\n4. **DRAFTING (General Awareness):**\n    * **Trigger:** The email is a **general question** or topic (e.g., \"What is AI?\") that doesn't require history.\n    * **Action:**\n        * Use your **internal knowledge** to draft a helpful, informative response.\n        * Use `Gmail` to **create the draft**."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        320,
+        144
+      ],
+      "id": "4d3a28e9-c82a-44ef-b982-5ec4e0708dc2",
+      "name": "AI Agent",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b6a890b9-d2c7-453b-b272-2922a45b3030",
+              "leftValue": "={{$json.output.priority}}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        144
+      ],
+      "id": "d9d3c455-1768-4f46-b4e1-f47b9968f97d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 10,
+        "simple": false,
+        "filters": {
+          "sender": "={{ $json.From }}"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        784,
+        368
+      ],
+      "id": "2a9b95ea-27c5-4848-bd36-14b13864cce9",
+      "name": "Get many messages in Gmail",
+      "webhookId": "591ff048-b79a-40a8-9a37-39182953b22f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Rf5VIZpC3TkaZJ5M",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "SHEET_ID_PLACEHOLDER",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "SHEET_ID_PLACEHOLDER"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Summary": "={{ $json.output.summary }}",
+            "Priority": "={{ $json.output.priority }}",
+            "Subject": "={{ $json.output.original_subject }}",
+            "Original Sender": "={{ $json.output.sender }}",
+            "Date": "={{ $today.format('MMMM d, yyyy') }}",
+            "draft_generated": "={{$json.output.draft_generated}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Original Sender",
+              "displayName": "Original Sender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "draft_generated",
+              "displayName": "draft_generated",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        64
+      ],
+      "id": "de6740f4-e59b-4784-9815-4ee65c412687",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ip63zkqwpqQggP14",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "USER_EMAIL_PLACEHOLDER",
+          "mode": "id"
+        },
+        "limit": 15,
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        608,
+        368
+      ],
+      "id": "1993fe0d-8a1c-42c0-accf-61e9d478b516",
+      "name": "Get many events in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Gih424AsSiNqsd3c",
+          "name": "Google Calendar account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Berlin",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedPerExecution": 5
+  },
+  "versionId": "588c8010-e909-407f-be28-792d4f75b5b3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "554584cd243f188fec65582d38c55c040e11abe7cbbdc58d13f29b0bc8476248"
+  },
+  "id": "jxYsYGHbILU5vb4r",
+  "tags": []
+}
